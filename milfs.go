@@ -36,8 +36,12 @@ func shloop() {
 		input := CleanInput(readInput)
 		fmt.Printf("input %v\n", input)
 		//check :=
-		ParseInput(input)
-		status = HandlingInput(input)
+		pipes := ParseInput(input)
+		if pipes == true {
+			status = PipeHandling(input)
+		} else {
+			status = HandlingInput(input)
+		}
 	}
 }
 
@@ -52,13 +56,75 @@ func CleanInput(reader *bufio.Reader) string {
 	return input
 }
 
-func ParseInput(input string) {
+func ParseInput(input string) bool {
 	pipe := strings.Contains(input, "|")
 	if pipe == true {
 		fmt.Printf("Contains at least 1 pipe\n")
+		return true
 	} else {
 		fmt.Printf("No pipes here\n")
+		return false
 	}
+	return false
+}
+
+func PipeHandling(input string) int {
+	pipeSan := strings.Split(input, "|")
+	//fmt.Printf("%v\n", pipeSan)
+	for i := range pipeSan {
+		pipeSan[i] = strings.TrimSpace(pipeSan[i])
+	}
+	//	pipelen := len(pipeSan)
+	//	argshit := string(pipeSan[0])
+	var twodPipe [][]string
+	for _, pipeSan := range pipeSan {
+		/* we iterate over pipeSan and the body of pipeSan gets appended to twodPipe
+		 * and inside that body we split the array with whitespace */
+		twodPipe = append(twodPipe, strings.Split(pipeSan, " "))
+	}
+
+	fmt.Printf("%v\n", twodPipe[0][0])
+	twodlen := len(twodPipe)
+	i := 0
+
+	for i < twodlen {
+		r := 0
+		y := 0
+		x := len(twodPipe[y][r]) - len(twodPipe[y][r])
+		z := x + 1
+		l := 0
+		c1 := twodPipe[y][x]
+		c2 := twodPipe[z][l]
+		fmt.Println(c1, c2)
+
+		piping1 := exec.Command(twodPipe[y][r], twodPipe[y][1:]...)
+		piping2 := exec.Command(twodPipe[z][l], twodPipe[z][1:]...)
+
+		piping2.Stdin, _ = piping1.StdoutPipe()
+		piping2.Stdout = os.Stdout
+		piping2.Stderr = os.Stderr
+
+		if i-twodlen == 1 {
+
+			piping2.Start()
+			piping1.Run()
+			piping2.Wait()
+			break
+		}
+		y++
+		i = 12
+	}
+
+	/*	for i := range twodPipe {
+			fmt.Println(twodPipe[i])
+		}
+
+		chucha := exec.Command()
+			chucha.Stdin = os.Stdin
+			chucha.Stdout = os.Stdout
+			chucha.Start()
+			chucha.Wait()*/
+	return 0
 }
 
 func HandlingInput(input string) int {
