@@ -1,13 +1,13 @@
 My Intentionally Less Friendly Shell :(
     A shell in Go.
 ========================================================================================================================
-[1] PIPING!
+[/] PIPING! (Up to 4 elements naturaly, after that it fallbacks into sh)
 [] Tab Completion
 [x] Proper CD function
 [x] Show PWD
 [x] Show hostname
 [x] Show current user
-[0] Colors
+[x] Colors
 [] Even MORE colors
 [] Implement a TOML file to handle customization
 [] Browse history with keys

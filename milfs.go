@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+var TEAL string = "\033[38;5;6m"
+var SKYBLUE string = "\033[38;5;74m"
+var RESET string = "\033[0m"
+
 func shellinf() (string, string, string) {
 	/* UN means username */
 	un, _ := user.Current()
@@ -31,11 +35,9 @@ func shloop() {
 	var status int
 	for status != 1 {
 		un, wd, hn := shellinf()
-		fmt.Printf("%v@%v > %v >> ", un, hn, wd)
+		fmt.Printf(TEAL+"%v"+SKYBLUE+"@%v>"+RESET+" %v >> ", un, hn, wd)
 
 		input := CleanInput(readInput)
-		fmt.Printf("input %v\n", input)
-		//check :=
 		pipes := ParseInput(input)
 		if pipes == true {
 			status = PipeHandling(input)
@@ -59,23 +61,78 @@ func CleanInput(reader *bufio.Reader) string {
 func ParseInput(input string) bool {
 	pipe := strings.Contains(input, "|")
 	if pipe == true {
-		fmt.Printf("Contains at least 1 pipe\n")
 		return true
-	} else {
-		fmt.Printf("No pipes here\n")
-		return false
 	}
 	return false
 }
 
+func twopiper(twodPipe [][]string) {
+	pipeEx1 := exec.Command(twodPipe[0][0], twodPipe[0][1:]...)
+	pipeEx2 := exec.Command(twodPipe[1][0], twodPipe[1][1:]...)
+
+	pipeEx2.Stdin, _ = pipeEx1.StdoutPipe()
+	pipeEx2.Stdout = os.Stdout
+	pipeEx2.Stderr = os.Stderr
+
+	err := pipeEx2.Start()
+	_ = pipeEx1.Run()
+	pipeEx2.Wait()
+	if err != nil {
+		fmt.Printf("Error piping: %v\n", pipeEx2)
+	}
+
+}
+
+func threepiper(twodPipe [][]string) {
+	pipex1 := exec.Command(twodPipe[0][0], twodPipe[0][1:]...)
+	pipex2 := exec.Command(twodPipe[1][0], twodPipe[1][1:]...)
+	pipex3 := exec.Command(twodPipe[2][0], twodPipe[2][1:]...)
+
+	pipex2.Stdin, _ = pipex1.StdoutPipe()
+	pipex3.Stdin, _ = pipex2.StdoutPipe()
+	pipex3.Stdout = os.Stdout
+	pipex3.Stderr = os.Stderr
+
+	err := pipex3.Start()
+	pipex2.Start()
+	pipex1.Run()
+	pipex2.Wait()
+	pipex3.Wait()
+	if err != nil {
+		fmt.Printf("Error piping: %v \n", err)
+	}
+}
+
+func fourpiper(twodPipe [][]string) {
+	pipex1 := exec.Command(twodPipe[0][0], twodPipe[0][1:]...)
+	pipex2 := exec.Command(twodPipe[1][0], twodPipe[1][1:]...)
+	pipex3 := exec.Command(twodPipe[2][0], twodPipe[2][1:]...)
+	pipex4 := exec.Command(twodPipe[3][0], twodPipe[3][1:]...)
+
+	pipex2.Stdin, _ = pipex1.StdoutPipe()
+	pipex3.Stdin, _ = pipex2.StdoutPipe()
+	pipex4.Stdin, _ = pipex3.StdoutPipe()
+	pipex4.Stdout = os.Stdout
+	pipex4.Stderr = os.Stderr
+
+	err := pipex4.Start()
+	pipex2.Start()
+	pipex3.Start()
+	pipex1.Run()
+	pipex2.Wait()
+	pipex3.Wait()
+	pipex4.Wait()
+	if err != nil {
+		fmt.Printf("Error piping: %v \n", err)
+	}
+
+}
+
 func PipeHandling(input string) int {
 	pipeSan := strings.Split(input, "|")
-	//fmt.Printf("%v\n", pipeSan)
 	for i := range pipeSan {
 		pipeSan[i] = strings.TrimSpace(pipeSan[i])
 	}
-	//	pipelen := len(pipeSan)
-	//	argshit := string(pipeSan[0])
 	var twodPipe [][]string
 	for _, pipeSan := range pipeSan {
 		/* we iterate over pipeSan and the body of pipeSan gets appended to twodPipe
@@ -83,55 +140,27 @@ func PipeHandling(input string) int {
 		twodPipe = append(twodPipe, strings.Split(pipeSan, " "))
 	}
 
-	fmt.Printf("%v\n", twodPipe[0][0])
 	twodlen := len(twodPipe)
-	i := 0
 
-	for i < twodlen {
-		r := 0
-		y := 0
-		x := len(twodPipe[y][r]) - len(twodPipe[y][r])
-		z := x + 1
-		l := 0
-		c1 := twodPipe[y][x]
-		c2 := twodPipe[z][l]
-		fmt.Println(c1, c2)
+	switch twodlen {
+	case 2:
+		twopiper(twodPipe)
+	case 3:
+		threepiper(twodPipe)
+	case 4:
+		fourpiper(twodPipe)
+	default:
+		lawls, _ := exec.Command("sh", "-c", input).Output()
+		fmt.Println(lawls)
 
-		piping1 := exec.Command(twodPipe[y][r], twodPipe[y][1:]...)
-		piping2 := exec.Command(twodPipe[z][l], twodPipe[z][1:]...)
-
-		piping2.Stdin, _ = piping1.StdoutPipe()
-		piping2.Stdout = os.Stdout
-		piping2.Stderr = os.Stderr
-
-		if i-twodlen == 1 {
-
-			piping2.Start()
-			piping1.Run()
-			piping2.Wait()
-			break
-		}
-		y++
-		i = 12
 	}
 
-	/*	for i := range twodPipe {
-			fmt.Println(twodPipe[i])
-		}
-
-		chucha := exec.Command()
-			chucha.Stdin = os.Stdin
-			chucha.Stdout = os.Stdout
-			chucha.Start()
-			chucha.Wait()*/
 	return 0
 }
 
 func HandlingInput(input string) int {
 	/* Sanitized input aka clean */
 	SanInput := strings.Split(input, " ")
-
-	fmt.Printf("saninput type: %T\n", SanInput)
 
 	if SanInput[0] == "cd" {
 
