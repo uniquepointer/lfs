@@ -1,0 +1,20 @@
+My Intentionally Less Friendly Shell :(
+    A shell in Go.
+========================================================================================================================
+[] PIPING!
+[] Tab Completion
+[x] Proper CD function
+[x] Show PWD
+[x] Show hostname
+[x] Show current user
+[1] Colors
+[] Even MORE colors
+[] Implement a TOML file to handle customization
+[] Browse history with keys
+[] Key functionality
+
+========================================================================================================================
+[x] - Available
+[1] - In Progress
+[/] - Partial
+[0] - On hold
